@@ -1,0 +1,221 @@
+if game.PlaceId == 11177482306 then
+    -- Load OrionLib for the GUI
+    local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
+
+    -- Create Window
+    local Window = OrionLib:MakeWindow({
+        Name = "Goat Hub for Street Wars 2",
+        HidePremium = false,
+        SaveConfig = true,
+        ConfigFolder = "GoatHub"
+    })
+
+    -- Global values for toggles
+    _G.killAura = false
+    _G.onePunch = false
+    _G.autoPickup = false
+    _G.godmode = false
+    _G.wallHack = false
+    _G.duplicateGun = false
+    _G.wallBang = false
+    _G.aimbot = false
+
+    -- Function to duplicate a gun based on player input
+    function duplicateGun(gunName)
+        local player = game.Players.LocalPlayer
+        local replicatedStorage = game:GetService("ReplicatedStorage")
+        local gun = replicatedStorage:FindFirstChild(gunName)
+        
+        if gun then
+            -- Clone the gun and place it in the player's Backpack
+            local gunClone = gun:Clone()
+            gunClone.Parent = player.Backpack
+            print("Gun duplicated:", gunName)
+        else
+            warn("Gun not found in ReplicatedStorage: " .. gunName)
+        end
+    end
+
+    -- Function to enable Godmode (sets health to 4 million)
+    function enableGodmode()
+        local player = game.Players.LocalPlayer
+        if player and player.Character then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.MaxHealth = 4000000
+                humanoid.Health = 4000000
+            end
+        end
+    end
+
+    -- Function to enable Wall Hack (red outline around players)
+    function enableWallHack()
+        local players = game:GetService("Players")
+        for _, otherPlayer in pairs(players:GetChildren()) do
+            if otherPlayer.Character then
+                local character = otherPlayer.Character
+                local outline = Instance.new("Highlight")
+                outline.Parent = character
+                outline.FillTransparency = 1
+                outline.OutlineColor = Color3.fromRGB(255, 0, 0)  -- Red outline
+            end
+        end
+    end
+
+    -- Function to enable Wall Bang (shoot through walls)
+    function enableWallBang()
+        local player = game.Players.LocalPlayer
+        local mouse = player:GetMouse()
+        if mouse then
+            mouse.TargetFilter = game.Workspace  -- Set target filter to the workspace to allow shooting through walls
+            print("Wall Bang Enabled")
+        end
+    end
+
+    -- Function to enable Aimbot (locks onto player's head)
+    function enableAimbot()
+        local player = game.Players.LocalPlayer
+        local mouse = player:GetMouse()
+        local closestPlayer = nil
+        local closestDistance = math.huge
+
+        -- Continuously aim at the closest player's head
+        game:GetService("RunService").Heartbeat:Connect(function()
+            if player and player.Character and mouse then
+                -- Find the closest player to aim at
+                for _, otherPlayer in pairs(game.Players:GetChildren()) do
+                    if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Head") then
+                        local head = otherPlayer.Character.Head
+                        local distance = (head.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                        if distance < closestDistance then
+                            closestDistance = distance
+                            closestPlayer = head
+                        end
+                    end
+                end
+
+                -- Lock the mouse position to the closest player's head
+                if closestPlayer then
+                    mouse.Hit = CFrame.new(closestPlayer.Position)
+                end
+            end
+        end)
+    end
+
+    -- Create Dupe Tab
+    local dupeTab = Window:MakeTab({
+        Name = "Dupe",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    -- Add Duplicate Gun Button
+    dupeTab:AddTextbox({
+        Name = "Enter Gun Name",
+        Default = "Enter gun name here",
+        TextDisappear = true,
+        Callback = function(gunName)
+            -- When the player enters a gun name and presses the button
+            duplicateGun(gunName)
+        end
+    })
+
+    -- Create Useful Tab
+    local usefulTab = Window:MakeTab({
+        Name = "Useful",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    -- Add Button for Godmode (sets player's health to 4 million)
+    usefulTab:AddButton({
+        Name = "Enable Godmode (4 Million Health)",
+        Callback = function()
+            _G.godmode = true
+            enableGodmode()  -- Enable godmode when the button is pressed
+        end
+    })
+
+    -- Add Button for Wall Hack (shows red outline around players)
+    usefulTab:AddButton({
+        Name = "Enable Wall Hack (Red Outline)",
+        Callback = function()
+            _G.wallHack = true
+            enableWallHack()  -- Enable wall hack when the button is pressed
+        end
+    })
+
+    -- Create Teleport Tab
+    local teleportTab = Window:MakeTab({
+        Name = "Teleport",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    teleportTab:AddButton({
+        Name = "Teleport to Kings Cutz",
+        Callback = function()
+            teleportToLocation(Vector3.new(0, 0, 0))  -- Replace with actual teleport coordinates for Kings Cutz
+        end
+    })
+
+    teleportTab:AddButton({
+        Name = "Teleport to Apartment 1",
+        Callback = function()
+            teleportToLocation(Vector3.new(0, 0, 0))  -- Replace with actual teleport coordinates for Apartment 1
+        end
+    })
+
+    -- Create Collision Tab for Kill Aura and One Punch
+    local collisionTab = Window:MakeTab({
+        Name = "Collision",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    -- Add Button for Kill Aura
+    collisionTab:AddButton({
+        Name = "Enable Kill Aura",
+        Callback = function()
+            _G.killAura = true
+            enableKillAura()  -- Enable kill aura when the button is pressed
+        end
+    })
+
+    -- Add Button for One Punch
+    collisionTab:AddButton({
+        Name = "Enable One Punch",
+        Callback = function()
+            _G.onePunch = true
+            enableOnePunch()  -- Enable one punch when the button is pressed
+        end
+    })
+
+    -- Create Hacking Tab for Wall Bang and Aimbot
+    local hackingTab = Window:MakeTab({
+        Name = "Hacking",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    -- Add Button for Wall Bang
+    hackingTab:AddButton({
+        Name = "Enable Wall Bang (Shoot Through Walls)",
+        Callback = function()
+            _G.wallBang = true
+            enableWallBang()  -- Enable wall bang when the button is pressed
+        end
+    })
+
+    -- Add Button for Aimbot
+    hackingTab:AddButton({
+        Name = "Enable Aimbot (Lock onto Heads)",
+        Callback = function()
+            _G.aimbot = true
+            enableAimbot()  -- Enable aimbot when the button is pressed
+        end
+    })
+
+    -- Final Step: Initialize the OrionLib UI
+    OrionLib:Init()
+end
